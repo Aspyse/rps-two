@@ -1,0 +1,15 @@
+{
+  "name": "rps-two",
+  "version": "1.0.0",
+  "description": "Rock-paper-scissors \"fighting game\"",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "author": "aspyse",
+  "license": "ISC",
+  "dependencies": {
+    "websocket": "^1.0.35",
+    "ws": "^8.18.0"
+  }
+}
