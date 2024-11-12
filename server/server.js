@@ -1,6 +1,23 @@
 // server.js
-const WebSocket = require('ws');
-const server = new WebSocket.Server({ port: 8080 });
+// SERVE CLIENT
+import express from 'express';
+import path from 'path';
+
+const app = express();
+app.use(express.static(path.join(import.meta.dirname, '../client')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(import.meta.dirname, '../client', 'index.html'));
+});
+
+const PORT = parseInt(process.env.PORT) || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// WEBSOCKET
+
+import { WebSocketServer } from 'ws';
+const server = new WebSocketServer({ port: 8080 });
 
 let waitingPlayer = null;
 const games = new Map();
@@ -139,8 +156,8 @@ function handleClash(game) {
         timestamp: Date.now()
       };
       socket.send(JSON.stringify(clash));
-      game.state.choices = [null, null];
     });
+    game.state.choices = [null, null];
   }
 }
 
@@ -148,6 +165,7 @@ function endGame(game, winner) {
   server.clients.forEach((socket) => {
     const gameEnd = {
       type: 'game_end',
+      state: game.state,
       winner: winner,
       timestamp: Date.now()
     };

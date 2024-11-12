@@ -13,6 +13,7 @@ let gameId = null;
 let choice = null;
 let clashChoices = [null, null];
 let hp = [7, 7];
+let oldhp = hp.slice();
 let lastClash = null;
 
 // GAME STATE BOOLS
@@ -38,6 +39,7 @@ ws.onmessage = (event) => {
             choice = null;
 
             // Update display
+            oldhp = hp.slice();
             hp = data.state.health;
             clashChoices = data.state.choices;
             break;
@@ -60,6 +62,10 @@ ws.onmessage = (event) => {
             break;
 
         case 'game_end':
+            lastClash = performance.now();
+            oldhp = hp.slice();
+            hp = data.state.health;
+            clashChoices = data.state.choices;
             gameWinner = data.winner;
             break;
 
@@ -110,10 +116,6 @@ function drawGame(timestamp) {
         ctx.fillText('Opponent disconnected.', 150, 150);
         return;
     }
-    if (gameWinner) {
-        ctx.fillText(gameWinner, 150, 150);
-        return;
-    }
 
     // INDICATOR CIRCLE
     ctx.beginPath();
@@ -128,13 +130,14 @@ function drawGame(timestamp) {
     }
 
     // HEALTHBARS
-    const offset1 = (1 - hp[0] / hpmax) * hpwidth;
+    const transitionProgress = Math.min(1,(timestamp - lastClash)/displayTime);
+    const offset1 = (1 - lerp(oldhp[0], hp[0], transitionProgress) / hpmax) * hpwidth;
     ctx.fillStyle = 'orange';
     ctx.fillRect(50, 40, hpwidth - offset1, 25);
     ctx.fillStyle = 'black';
     ctx.strokeRect(53, 43, hpwidth, 25);
 
-    const offset2 = (1 - hp[1] / hpmax) * hpwidth;
+    const offset2 = (1 - lerp(oldhp[1], hp[1], transitionProgress) / hpmax) * hpwidth;
     ctx.fillStyle = 'orange';
     ctx.fillRect(430 + offset2, 40, hpwidth - offset2, 25);
     ctx.fillStyle = 'black';
@@ -153,6 +156,7 @@ function drawGame(timestamp) {
 
     let opponentImage = null;
     if (timestamp - lastClash <= displayTime) {
+        console.log(clashChoices);
         switch (playerId == 0 ? clashChoices[0] : clashChoices[1]) {
             case 'rock': choiceImage = rock; break;
             case 'paper': choiceImage = paper; break;
@@ -163,17 +167,27 @@ function drawGame(timestamp) {
             case 'paper': opponentImage = paper; break;
             case 'scissors': opponentImage = scissors; break;
         }
-    } else if (opponentLocked) opponentImage = check;
+    } else {
+        if (gameWinner) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillText(gameWinner, 150, 150);
+            return;
+        } else if (opponentLocked) opponentImage = check;
+    }
 
     if (playerId == 0) {
         if (choiceImage) ctx.drawImage(choiceImage, 200, 165, 120, 120);
         if (opponentImage) ctx.drawImage(opponentImage, 480, 165, 120, 120);
-    } else if (playerId == 1) {
+    } else {
         if (choiceImage) ctx.drawImage(choiceImage, 480, 165, 120, 120);
         if (opponentImage) ctx.drawImage(opponentImage, 200, 165, 120, 120);
     }
 
     window.requestAnimationFrame(drawGame);
+}
+
+function lerp (start, dest, progress) {
+    return (start - (start-dest)*progress);
 }
 
 // INPUT
