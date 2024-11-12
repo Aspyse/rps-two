@@ -1,5 +1,5 @@
 // GAME CONSTANTS
-const ws = new WebSocket('ws://localhost:8080');
+const ws = new WebSocket('ws://rps-two-ivory.vercel.app:8080');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const stats = document.getElementById('stats');
