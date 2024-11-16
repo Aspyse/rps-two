@@ -1,10 +1,15 @@
-// GAME CONSTANTS
-const ws = new WebSocket('ws://rps-two-ivory.vercel.app:8080');
+// WEBSLOCKET
+const LAN_IP = '192.168.191.141';
+const ws = new WebSocket(`ws://${LAN_IP}:8080`);
+
+// UI ELEMENTS
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const stats = document.getElementById('stats');
+const reset = document.getElementById('reset-button');
 
 // GAME VARIABLES
+// PRING
 let lastPingTime = 0;
 let pingHistory = [];
 
@@ -58,6 +63,7 @@ ws.onmessage = (event) => {
             playerId = data.player;
             gameId = data.gameId;
 
+            reset.disabled = true;
             window.requestAnimationFrame(drawGame);
             break;
 
@@ -67,6 +73,7 @@ ws.onmessage = (event) => {
             hp = data.state.health;
             clashChoices = data.state.choices;
             gameWinner = data.winner;
+            reset.disabled = false;
             break;
 
         case 'opponent_disconnected':
@@ -224,4 +231,10 @@ document.addEventListener('keydown', (e) => {
             ws.send(JSON.stringify(lockIn));
         }
     }
+});
+
+reset.addEventListener('click', (e) => {
+    gameWinner = null;
+    opponentDisconnected = false;
+    opponentLocked = false;
 });
