@@ -9,15 +9,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(import.meta.dirname, '../client', 'index.html'));
 });
 
+const LAN_IP = '192.168.191.141';
 const PORT = parseInt(process.env.PORT) || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, LAN_IP, () => {
+  console.log(`Server is running on http://${LAN_IP}:${PORT}`);
 });
 
 // WEBSOCKET
-
 import { WebSocketServer } from 'ws';
-const server = new WebSocketServer({ port: 8080 });
+const server = new WebSocketServer({ host: LAN_IP, port: 8080 });
 
 let waitingPlayer = null;
 const games = new Map();
